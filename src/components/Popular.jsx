@@ -8,7 +8,7 @@ const Wrapper = styled.div`
 `;
 
 const Card = styled.div`
-  min-height: 25rem;
+  min-height: 18rem;
   border-radius: 2rem;
   overflow: hidden;
   position: relative;
@@ -45,8 +45,8 @@ const Gradient = styled.div`
   height: 100%;
   z-index: 3;
   position: absolute;
-  background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.5));
-`
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+`;
 
 function Popular() {
   const [popular, setPopular] = useState([]);
@@ -56,11 +56,18 @@ function Popular() {
   }, []);
 
   const getPopular = async () => {
-    const api = await fetch(
-      `https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API}&number=9`
-    );
-    const data = await api.json();
-    setPopular(data.recipes);
+    const isAvailable = localStorage.getItem("popular");
+
+    if (isAvailable) {
+      setPopular(JSON.parse(isAvailable));
+    } else {
+      const api = await fetch(
+        `https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API}&number=9&include-tags=vegetarian`
+      );
+      const data = await api.json();
+      localStorage.setItem("popular", JSON.stringify(data.recipes));
+      setPopular(data.recipes);
+    }
   };
 
   return (
@@ -68,13 +75,15 @@ function Popular() {
       <Wrapper>
         <h3>Popular picks</h3>
 
-        <Splide options={{
-          perPage: 4,
-          arrows: false,
-          pagination: false,
-          drag: "free",
-          gap: "5rem",
-        }}>
+        <Splide
+          options={{
+            perPage: 4,
+            arrows: false,
+            pagination: false,
+            drag: "free",
+            gap: "5rem",
+          }}
+        >
           {popular.map((recipe) => {
             return (
               <SplideSlide key={recipe.id}>
